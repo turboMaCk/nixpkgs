@@ -14,6 +14,12 @@ in
       type = types.string;
       description = "Locker to be used with xsslock";
     };
+    extraOptions = mkOption {
+      default = [ ];
+      example = literalExample [ "--ignore-sleep" ];
+      type = types.listOf types.str;
+      description = "Additional command-line arguments to pass to <command>xss-lock</command>.";
+    };
   };
 
   config = mkIf cfg.enable {
@@ -21,7 +27,12 @@ in
       description = "XSS Lock Daemon";
       wantedBy = [ "graphical-session.target" ];
       partOf = [ "graphical-session.target" ];
-      serviceConfig.ExecStart = "${pkgs.xss-lock}/bin/xss-lock ${cfg.lockerCommand}";
+      serviceConfig.ExecStart = with lig; strings.concatStringsSep " " ([
+          "${pkgs.xss-lock}/bin/xss-lock"
+        ] ++ cfg.extraOptions ++ [
+          "--"
+          "cfg.lockerCommand"
+      ]);
     };
   };
 }
