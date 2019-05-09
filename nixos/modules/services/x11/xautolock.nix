@@ -93,6 +93,13 @@ in
             <command>xautolock</command>.
           '';
         };
+
+        enableXssLocker = mkEnableOption "xautolock.notify" // {
+          description = ''
+            Whether to enable <command>xss-locker</command>
+            program to lock screen on suspend.
+          '';
+        };
       };
     };
 
@@ -136,5 +143,12 @@ in
           message = "Please specify a canonical path for `services.xserver.xautolock.${option}`";
         })
       );
+    };
+
+    config = mkIf cfg.enableXssLocker {
+      config.programs.xss-lock = {
+        enable = true;
+        lockerCommand = cfg.locker;
+      };
     };
   }
