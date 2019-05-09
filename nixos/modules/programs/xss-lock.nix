@@ -18,7 +18,10 @@ in
       default = [ ];
       example = literalExample [ "--ignore-sleep" ];
       type = types.listOf types.str;
-      description = "Additional command-line arguments to pass to <command>xss-lock</command>.";
+      description = ''
+        Additional command-line arguments to pass to
+        <command>xss-lock</command>.
+      '';
     };
   };
 
@@ -27,12 +30,13 @@ in
       description = "XSS Lock Daemon";
       wantedBy = [ "graphical-session.target" ];
       partOf = [ "graphical-session.target" ];
-      serviceConfig.ExecStart = with lig; strings.concatStringsSep " " ([
-          "${pkgs.xss-lock}/bin/xss-lock"
-        ] ++ cfg.extraOptions ++ [
-          "--"
-          "cfg.lockerCommand"
-      ]);
+      serviceConfig.ExecStart = with lib;
+        strings.concatStringsSep " " ([
+            "${pkgs.xss-lock}/bin/xss-lock"
+          ] ++ cfg.extraOptions ++ [
+            "--"
+            "cfg.lockerCommand"
+        ]);
     };
   };
 }
