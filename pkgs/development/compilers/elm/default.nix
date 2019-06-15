@@ -44,13 +44,13 @@ let
             */
             elm-format = justStaticExecutables (doJailbreak (self.callPackage ./packages/elm-format.nix {}));
 
-            elmi-to-json = justStaticExecutables (self.callPackage ./packages/elmi-to-json.nix {});
+            elmi-to-json = justStaticExecutables (doJailbreak (self.callPackage ./packages/elmi-to-json.nix {}));
 
             inherit fetchElmDeps;
             elmVersion = elmPkgs.elm.version;
 
             /*
-            Node/NPM based dependecies can be upgraded using script
+            Node/NPM based dependencies can be upgraded using script
             `packages/generate-node-packages.sh`.
             Packages which rely on `bin-wrap` will fail by default
             and can be patched using `patchBinwrap` function defined in `packages/patch-binwrap.nix`.

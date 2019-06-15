@@ -7,8 +7,8 @@ mkDerivation {
   version = "0.19.4";
   src = fetchgit {
     url = "https://github.com/stoeffel/elmi-to-json.git";
-    rev = "357ad96f05e4c68023b036f27f6f65c4377c7427";
-    sha256 = "0vj9fdqgg2zd1nxpll6v02fk6bcyhx00xhp3s8sd7ycvirwsim9n";
+    rev = "61fbc861fe7d63ce22d6e0350dce3f1bf41c79f3";
+    sha256 = "1hcggk4p3slhmfhzi6ah1h1jap34kiidbbf92jr4b7i0rwv1s18r";
   };
   isLibrary = true;
   isExecutable = true;
@@ -19,7 +19,7 @@ mkDerivation {
   libraryToolDepends = [ hpack ];
   executableHaskellDepends = [ base ];
   testHaskellDepends = [ base ];
-  preConfigure = "hpack";
+  prePatch = "hpack";
   homepage = "https://github.com/stoeffel/elmi-to-json#readme";
   description = "Translates elmi binary files to JSON representation";
   license = stdenv.lib.licenses.bsd3;
