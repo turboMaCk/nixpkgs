@@ -9,7 +9,7 @@ let
 
   # Haskell packages that require ghc 9.8
   # > "Thank you captain obvious"
-  hs98Pkgs = pkgs.haskell.packages.ghc98.override {
+  elmPkgsSet = pkgs.haskell.packages.ghc98.override {
     overrides =
       self: super:
       {
@@ -48,16 +48,17 @@ let
   hs810Pkgs = import ./packages/ghc8_10 { inherit pkgs lib; };
 
   # Haskell packages that require ghc 9.2
-  hs92Pkgs = import ./packages/ghc9_2 { inherit pkgs lib; };
+  elmFormatPkgsSet = import ./packages/ghc9_2 { inherit pkgs lib; };
 
   # Patched, originally npm-downloaded, packages
   patchedNodePkgs = import ./packages/node { inherit pkgs lib nodejs makeWrapper; };
 
   assembleScope = self: basics:
     {
-      inherit (hs98Pkgs) elm;
-    }
-    // (hs92Pkgs self).elmPkgs // (hs810Pkgs self).elmPkgs // (patchedNodePkgs self) // basics;
+      inherit (elmPkgsSet) elm;
+      inherit (elmFormatPkgsSet) elm-format;
+      inherit (hs810Pkgs) elm-instrument elmi-to-json;
+    } // (patchedNodePkgs self) // basics;
 in
 lib.makeScope pkgs.newScope
   (self: assembleScope self

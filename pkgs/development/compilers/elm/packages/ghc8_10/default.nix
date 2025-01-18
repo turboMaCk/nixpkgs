@@ -1,12 +1,11 @@
 { pkgs, lib }:
-
-self:
 pkgs.haskell.packages.ghc810.override {
   overrides =
     self: super:
     let
       inherit (pkgs.haskell.lib.compose) justStaticExecutables overrideCabal doJailbreak;
-      elmPkgs = rec {
+    in
+      {
         elmi-to-json = justStaticExecutables (
           overrideCabal (drv: {
             version = "unstable-2021-07-19";
@@ -27,7 +26,7 @@ pkgs.haskell.packages.ghc810.override {
             homepage = "https://github.com/stoeffel/elmi-to-json";
             license = lib.licenses.bsd3;
             maintainers = [ lib.maintainers.turbomack ];
-          }) (self.callPackage ./elmi-to-json { })
+          }) (self.callPackage ../elmi-to-json { })
         );
 
         elm-instrument = justStaticExecutables (
@@ -60,24 +59,11 @@ pkgs.haskell.packages.ghc810.override {
             homepage = "https://github.com/zwilias/elm-instrument";
             license = lib.licenses.bsd3;
             maintainers = [ lib.maintainers.turbomack ];
-          }) (self.callPackage ./elm-instrument { })
+          }) (self.callPackage ../elm-instrument { })
         );
+        attoparsec = self.attoparsec_0_13_2_5;
+        aeson = doJailbreak self.aeson_1_5_6_0;
+        indents = self.callPackage ../indents { };
+        elm-format = null;
       };
-    in
-    elmPkgs
-    // {
-      inherit elmPkgs;
-
-      # We need attoparsec < 0.14 to build elm for now
-      attoparsec = self.attoparsec_0_13_2_5;
-
-      # aeson 2.0.3.0 does not build with attoparsec_0_13_2_5
-      aeson = doJailbreak self.aeson_1_5_6_0;
-
-      # elm-instrument needs this
-      indents = self.callPackage ./indents { };
-
-      # elm-instrument's tests depend on an old version of elm-format, but we set doCheck to false for other reasons above
-      elm-format = null;
-    };
 }
