@@ -7,8 +7,42 @@
 let
   fetchElmDeps = pkgs.callPackage ./lib/fetchElmDeps.nix { };
 
-  # Haskell packages that require ghc 9.6
-  hs96Pkgs = import ./packages/ghc9_6 { inherit pkgs lib makeWrapper nodejs fetchElmDeps; };
+  # Haskell packages that require ghc 9.8
+  # > "Thank you captain obvious"
+  hs98Pkgs = pkgs.haskell.packages.ghc98.override {
+    overrides =
+      self: super:
+      {
+        elm = pkgs.haskell.lib.compose.overrideCabal (drv: {
+          # sadly with parallelism most of the time breaks compilation
+          enableParallelBuilding = false;
+          preConfigure = fetchElmDeps {
+            elmPackages = (import packages/elm/elm-srcs.nix);
+            elmVersion = drv.version;
+            registryDat = packages/elm/registry.dat;
+          };
+          buildTools = drv.buildTools or [ ] ++ [ makeWrapper ];
+          postInstall = ''
+            wrapProgram $out/bin/elm \
+              --prefix PATH ':' ${lib.makeBinPath [ nodejs ]}
+          '';
+
+          description = "Delightful language for reliable webapps";
+          homepage = "https://elm-lang.org/";
+          license = lib.licenses.bsd3;
+          maintainers = with lib.maintainers; [
+            domenkozar
+            turbomack
+          ];
+        }) (self.callPackage ./packages/elm { });
+
+        inherit fetchElmDeps;
+
+        ansi-wl-pprint = pkgs.haskell.lib.compose.overrideCabal (drv: {
+          jailbreak = true;
+        }) (self.callPackage ./packages/elm/ansi-wl-pprint { });
+      };
+  };
 
   # Haskell packages that require ghc 8.10
   hs810Pkgs = import ./packages/ghc8_10 { inherit pkgs lib; };
@@ -20,7 +54,10 @@ let
   patchedNodePkgs = import ./packages/node { inherit pkgs lib nodejs makeWrapper; };
 
   assembleScope = self: basics:
-    (hs96Pkgs self).elmPkgs // (hs92Pkgs self).elmPkgs // (hs810Pkgs self).elmPkgs // (patchedNodePkgs self) // basics;
+    {
+      inherit (hs98Pkgs) elm;
+    }
+    // (hs92Pkgs self).elmPkgs // (hs810Pkgs self).elmPkgs // (patchedNodePkgs self) // basics;
 in
 lib.makeScope pkgs.newScope
   (self: assembleScope self
@@ -37,7 +74,7 @@ lib.makeScope pkgs.newScope
       */
       elmLib =
         let
-          hsElmPkgs = (hs810Pkgs self) // (hs96Pkgs self);
+          hsElmPkgs = hs810Pkgs // self;
         in
         import ./lib {
           inherit lib;
