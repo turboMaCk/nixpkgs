@@ -44,8 +44,7 @@ let
       };
   };
 
-  # Haskell packages that require ghc 8.10
-  hs810Pkgs =
+  elmToolingPkgsSet =
     pkgs.haskell.packages.ghc810.override {
       overrides =
         self: super:
@@ -177,7 +176,7 @@ let
     {
       inherit (elmPkgsSet) elm;
       inherit (elmFormatPkgsSet) elm-format;
-      inherit (hs810Pkgs) elm-instrument elmi-to-json;
+      inherit (elmToolingPkgsSet) elm-instrument elmi-to-json;
     } // (patchedNodePkgs self) // basics;
 in
 lib.makeScope pkgs.newScope
